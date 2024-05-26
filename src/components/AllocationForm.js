@@ -1,5 +1,5 @@
 
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { AppContext } from '../context/AppContext';
 
 const AllocationForm = (props) => {
@@ -9,30 +9,47 @@ const AllocationForm = (props) => {
     const [cost, setCost] = useState('');
     const [action, setAction] = useState('');
 
+    const[isCostValid, setIsCostValid] = useState(true);
+    const costInputRef = useRef(null);
+
     const submitEvent = () => {
+
+            if(isNaN(cost) || cost<=0) {
+                alert("Please enter a valid number for cost.");
+                setIsCostValid(false);
+                costInputRef.current.focus();
+            }
 
             if(cost > remaining) {
                 alert("The value cannot exceed remaining funds  £"+remaining);
                 setCost("");
+                setIsCostValid(false);
+                costInputRef.current.focus();
                 return;
             }
+
+            setIsCostValid(true);
 
         const expense = {
             name: name,
             cost: parseInt(cost),
         };
+
         if(action === "Reduce") {
             dispatch({
                 type: 'RED_EXPENSE',
                 payload: expense,
             });
+            
         } else {
                 dispatch({
                     type: 'ADD_EXPENSE',
                     payload: expense,
                 });
+
             }
     };
+
 
     return (
         <div>
@@ -60,14 +77,15 @@ const AllocationForm = (props) => {
                 <option value="Reduce" name="Reduce">Reduce</option>
                   </select>
 
-                    <input
-                        required='required'
-                        type='number'
-                        id='cost'
-                        value={cost}
-                        style={{ marginLeft: '2rem' , size: 10}}
-                        onChange={(event) => setCost(event.target.value)}>
-                        </input>
+                  <input
+                    required='required'
+                    type='number'
+                    id='cost'
+                    value={cost}
+                    ref={costInputRef} // Add the ref here
+                    style={{ marginLeft: '2rem', size: 10, borderColor: isCostValid ? '' : 'red' }} 
+                    onChange={(event) => setCost(event.target.value)}
+                />
 
                     <button className="btn btn-primary" onClick={submitEvent} style={{ marginLeft: '2rem' }}>
                         Save
